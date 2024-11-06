@@ -57,7 +57,7 @@ import CountUpComponent from "components/countUpComponent/countUpComponent";
 import Pagination from "components/pagination/Pagination";
 import Spinner from "components/spinner/Spinner";
 import LeadsModal from "../../lead/LeadsModal";
-
+import { useStateContext } from "contexts/store";
 import {
   FaCheck,
   FaHistory,
@@ -168,6 +168,8 @@ export default function CheckTable(props) {
     isOpen: false,
     lid: null,
   });
+  const { isLeadCycle, setIsLeadCycle } = useStateContext();
+
   useEffect(() => {
     setTempSelectedColumns(dataColumn);
   }, [dataColumn]);
@@ -221,7 +223,7 @@ export default function CheckTable(props) {
 
       const r = await getApi(`api/user/view/${userId}`);
       const response = await putApi(`api/user/edit/${userId}`, {
-        ...r?.data,
+        // ...r?.data,
         coins:
           lead?.data?.lead?.leadStatus == "new"
             ? r?.data?.coins + 300
@@ -680,7 +682,7 @@ export default function CheckTable(props) {
             const lead = await getApi(`api/lead/view/${leadId}`);
             const r = await getApi(`api/user/view/${agentId}`);
             const res = await putApi(`api/user/edit/${agentId}`, {
-              ...r?.data,
+              // ...r?.data,
               coins:
                 lead?.data?.lead?.leadStatus == "new"
                   ? r?.data?.coins + 300
@@ -691,7 +693,7 @@ export default function CheckTable(props) {
             const lead = await getApi(`api/lead/view/${leadId}`);
             const r = await getApi(`api/user/view/${managerId}`);
             const res = await putApi(`api/user/edit/${managerId}`, {
-              ...r?.data,
+              // ...r?.data,
               coins:
                 lead?.data?.lead?.leadStatus == "new"
                   ? r?.data?.coins + 300
@@ -816,7 +818,7 @@ export default function CheckTable(props) {
 
       const r = await getApi(`api/user/view/${user?._id}`);
       const response = await putApi(`api/user/edit/${user?._id}`, {
-        ...r?.data,
+        // ...r?.data,
         coins:
           allData?.find((lead) => lead?._id == leadID)?.leadStatus == "new"
             ? r?.data?.coins - 300
@@ -1371,6 +1373,10 @@ export default function CheckTable(props) {
                               {cell?.value?.text || cell?.value || "-"}
                             </Text>
                           );
+                        } else if (cell?.column.Header === "Country Source") {
+                          data = (
+                            <Text fontSize={"sm"}>{cell?.value || "-"}</Text>
+                          );
                         } else if (cell?.column.Header === "Phone Number") {
                           data = callAccess?.create ? (
                             <Text
@@ -1648,9 +1654,13 @@ export default function CheckTable(props) {
                                     py={2.5}
                                     width={"max-content"}
                                     onClick={() => {
-                                      navigate(
-                                        "/leadCycle/" + row?.original?._id
-                                      );
+                                      // navigate(
+                                      //   "/leadCycle/" + row?.original?._id
+                                      // );
+                                      setIsLeadCycle({
+                                        isOpen: true,
+                                        id: row?.original?._id,
+                                      });
                                     }}
                                     icon={<FaHistory fontSize={15} mb={1} />}
                                   >
