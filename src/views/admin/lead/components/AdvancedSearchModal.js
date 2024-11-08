@@ -252,6 +252,60 @@ const AdvancedSearchModal = ({
                 mb="0"
                 mt={2}
               >
+                Nationality
+              </FormLabel>
+              <Input
+                fontSize="sm"
+                onChange={handleChange}
+                onBlur={handleBlur}
+                value={values?.nationality}
+                name="nationality"
+                placeholder="Search by Nationaity"
+                fontWeight="500"
+              />
+              <Text mb="10px" color={"red"}>
+                {" "}
+                {errors.nationality &&
+                  touched.nationality &&
+                  errors.nationality}
+              </Text>
+            </GridItem>
+            <GridItem colSpan={{ base: 12, md: 6 }}>
+              <FormLabel
+                display="flex"
+                ms="4px"
+                fontSize="sm"
+                fontWeight="600"
+                color={"#000"}
+                mb="0"
+                mt={2}
+              >
+                Country Source
+              </FormLabel>
+              <Input
+                fontSize="sm"
+                onChange={handleChange}
+                onBlur={handleBlur}
+                value={values?.ip}
+                name="ip"
+                placeholder="Search by Country Source"
+                fontWeight="500"
+              />
+              <Text mb="10px" color={"red"}>
+                {" "}
+                {errors.ip && touched.ip && errors.ip}
+              </Text>
+            </GridItem>
+            <GridItem colSpan={{ base: 12, md: 6 }}>
+              <FormLabel
+                display="flex"
+                ms="4px"
+                fontSize="sm"
+                fontWeight="600"
+                color={"#000"}
+                mb="0"
+                mt={2}
+              >
                 Lead Campaign
               </FormLabel>
               <Input

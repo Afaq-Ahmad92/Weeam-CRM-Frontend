@@ -57,7 +57,7 @@ import CountUpComponent from "components/countUpComponent/countUpComponent";
 import Pagination from "components/pagination/Pagination";
 import Spinner from "components/spinner/Spinner";
 import LeadsModal from "../../lead/LeadsModal";
-import { useStateContext } from "contexts/store";
+
 import {
   FaCheck,
   FaHistory,
@@ -94,6 +94,7 @@ import AdvancedSearchModal from "./AdvancedSearchModal";
 import { getUserNameById } from "utils";
 import { IoMdClose } from "react-icons/io";
 import { deleteApi } from "services/api";
+import LastNoteText from "views/admin/lead/components/LastNoteText";
 export default function CheckTable(props) {
   const {
     tableData,
@@ -123,6 +124,7 @@ export default function CheckTable(props) {
     checkApproval,
     displayAdvSearchData,
     fetchAdvancedSearch,
+    currentState,
   } = props;
   const textColor = useColorModeValue("gray.500", "white");
   const borderColor = useColorModeValue("gray.200", "whiteAlpha.100");
@@ -168,8 +170,6 @@ export default function CheckTable(props) {
     isOpen: false,
     lid: null,
   });
-  const { isLeadCycle, setIsLeadCycle } = useStateContext();
-
   useEffect(() => {
     setTempSelectedColumns(dataColumn);
   }, [dataColumn]);
@@ -223,7 +223,7 @@ export default function CheckTable(props) {
 
       const r = await getApi(`api/user/view/${userId}`);
       const response = await putApi(`api/user/edit/${userId}`, {
-        // ...r?.data,
+        ...r?.data,
         coins:
           lead?.data?.lead?.leadStatus == "new"
             ? r?.data?.coins + 300
@@ -682,7 +682,7 @@ export default function CheckTable(props) {
             const lead = await getApi(`api/lead/view/${leadId}`);
             const r = await getApi(`api/user/view/${agentId}`);
             const res = await putApi(`api/user/edit/${agentId}`, {
-              // ...r?.data,
+              ...r?.data,
               coins:
                 lead?.data?.lead?.leadStatus == "new"
                   ? r?.data?.coins + 300
@@ -693,7 +693,7 @@ export default function CheckTable(props) {
             const lead = await getApi(`api/lead/view/${leadId}`);
             const r = await getApi(`api/user/view/${managerId}`);
             const res = await putApi(`api/user/edit/${managerId}`, {
-              // ...r?.data,
+              ...r?.data,
               coins:
                 lead?.data?.lead?.leadStatus == "new"
                   ? r?.data?.coins + 300
@@ -818,7 +818,7 @@ export default function CheckTable(props) {
 
       const r = await getApi(`api/user/view/${user?._id}`);
       const response = await putApi(`api/user/edit/${user?._id}`, {
-        // ...r?.data,
+        ...r?.data,
         coins:
           allData?.find((lead) => lead?._id == leadID)?.leadStatus == "new"
             ? r?.data?.coins - 300
@@ -1362,6 +1362,19 @@ export default function CheckTable(props) {
                                 {cell?.value?.text || cell?.value}
                               </Text>
                             );
+                        }else if (cell?.column.Header === "Manager") {
+                          data = (
+                             <RenderManager
+                              fetchData={fetchData}
+                              displaySearchData={displaySearchData || displayAdvSearchData}
+                              setSearchedData={setSearchedData}
+                              pageIndex={pageIndex}
+                              setData={setData}
+                              leadID={row?.original?._id?.toString()}
+                              value={cell?.value}
+                              isAdmin= {user?.role === "superAdmin"}
+                            />
+                          );
                         } else if (cell?.column.Header === "Whatsapp Number") {
                           data = (
                             <Text
@@ -1373,9 +1386,11 @@ export default function CheckTable(props) {
                               {cell?.value?.text || cell?.value || "-"}
                             </Text>
                           );
-                        } else if (cell?.column.Header === "Country Source") {
+                        } else if (cell?.column.Header === "Last Note") {
                           data = (
-                            <Text fontSize={"sm"}>{cell?.value || "-"}</Text>
+                            <Box maxWidth={300}>
+                              <LastNoteText text={cell?.value} />
+                            </Box>
                           );
                         } else if (cell?.column.Header === "Phone Number") {
                           data = callAccess?.create ? (
@@ -1423,11 +1438,16 @@ export default function CheckTable(props) {
                         } else if (cell?.column.Header === "Status") {
                           data = (
                             <div className="selectOpt">
-                              <RenderStatus
-                                setUpdatedStatuses={setUpdatedStatuses}
-                                id={cell?.row?.original?._id}
-                                cellValue={cell?.value}
-                              />
+                              {user?.role === "superAdmin" ||
+                              currentState === "Accepted" ? (
+                                <RenderStatus
+                                  setUpdatedStatuses={setUpdatedStatuses}
+                                  id={cell?.row?.original?._id}
+                                  cellValue={cell?.value}
+                                />
+                              ) : (
+                                <Text>{cell?.value}</Text>
+                              )}
                             </div>
                           );
                         } else if (cell?.column.Header === "Lead Approval") {
@@ -1630,7 +1650,11 @@ export default function CheckTable(props) {
                                       : userCoins < 150
                                   }
                                 >
-                                  Buy
+                                  Buy -{" "}
+                                  {row?.original?.leadStatus == "new" ||
+                                  row?.original?.leadStatus == ""
+                                    ? 300
+                                    : 150}
                                 </Button>
                               )}
                             </Text>
@@ -1654,13 +1678,9 @@ export default function CheckTable(props) {
                                     py={2.5}
                                     width={"max-content"}
                                     onClick={() => {
-                                      // navigate(
-                                      //   "/leadCycle/" + row?.original?._id
-                                      // );
-                                      setIsLeadCycle({
-                                        isOpen: true,
-                                        id: row?.original?._id,
-                                      });
+                                      navigate(
+                                        "/leadCycle/" + row?.original?._id
+                                      );
                                     }}
                                     icon={<FaHistory fontSize={15} mb={1} />}
                                   >
@@ -1906,7 +1926,7 @@ export default function CheckTable(props) {
                   {errors.leadStatus && touched.leadStatus && errors.leadStatus}
                 </Text>
               </GridItem>
-
+              {/* 
               <GridItem colSpan={{ base: 12, md: 6 }}>
                 <FormLabel
                   display="flex"
@@ -1932,8 +1952,8 @@ export default function CheckTable(props) {
                   {" "}
                   {errors.leadEmail && touched.leadEmail && errors.leadEmail}
                 </Text>
-              </GridItem>
-              <GridItem colSpan={{ base: 12, md: 6 }}>
+              </GridItem> */}
+              {/* <GridItem colSpan={{ base: 12, md: 6 }}>
                 <FormLabel
                   display="flex"
                   ms="4px"
@@ -1960,6 +1980,35 @@ export default function CheckTable(props) {
                     touched.leadPhoneNumber &&
                     errors.leadPhoneNumber}
                 </Text>
+              </GridItem> */}
+
+              <GridItem colSpan={{ base: 12, md: 6 }}>
+                <FormLabel
+                  display="flex"
+                  ms="4px"
+                  fontSize="sm"
+                  fontWeight="600"
+                  color={"#000"}
+                  mb="0"
+                  mt={2}
+                >
+                  Lead Address
+                </FormLabel>
+                <Input
+                  fontSize="sm"
+                  onChange={handleChange}
+                  onBlur={handleBlur}
+                  value={values?.leadAddress}
+                  name="leadAddress"
+                  placeholder="Search by Address"
+                  fontWeight="500"
+                />
+                <Text mb="10px" color={"red"}>
+                  {" "}
+                  {errors.leadAddress &&
+                    touched.leadAddress &&
+                    errors.leadAddress}
+                </Text>
               </GridItem>
               <GridItem colSpan={{ base: 12, md: 6 }}>
                 <FormLabel
@@ -1971,7 +2020,7 @@ export default function CheckTable(props) {
                   mb="0"
                   mt={2}
                 >
-                  Nationaly
+                  Nationality
                 </FormLabel>
                 <Input
                   fontSize="sm"
@@ -1979,7 +2028,7 @@ export default function CheckTable(props) {
                   onBlur={handleBlur}
                   value={values?.nationality}
                   name="nationality"
-                  placeholder="Search by Nationality"
+                  placeholder="Search by Nationaity"
                   fontWeight="500"
                 />
                 <Text mb="10px" color={"red"}>
@@ -1987,6 +2036,138 @@ export default function CheckTable(props) {
                   {errors.nationality &&
                     touched.nationality &&
                     errors.nationality}
+                </Text>
+              </GridItem>
+              <GridItem colSpan={{ base: 12, md: 6 }}>
+                <FormLabel
+                  display="flex"
+                  ms="4px"
+                  fontSize="sm"
+                  fontWeight="600"
+                  color={"#000"}
+                  mb="0"
+                  mt={2}
+                >
+                  Country Source
+                </FormLabel>
+                <Input
+                  fontSize="sm"
+                  onChange={handleChange}
+                  onBlur={handleBlur}
+                  value={values?.ip}
+                  name="ip"
+                  placeholder="Search by Country Source"
+                  fontWeight="500"
+                />
+                <Text mb="10px" color={"red"}>
+                  {" "}
+                  {errors.ip && touched.ip && errors.ip}
+                </Text>
+              </GridItem>
+              <GridItem colSpan={{ base: 12, md: 6 }}>
+                <FormLabel
+                  display="flex"
+                  ms="4px"
+                  fontSize="sm"
+                  fontWeight="600"
+                  color={"#000"}
+                  mb="0"
+                  mt={2}
+                >
+                  Lead Campaign
+                </FormLabel>
+                <Input
+                  fontSize="sm"
+                  onChange={handleChange}
+                  onBlur={handleBlur}
+                  value={values?.leadCampaign}
+                  name="leadCampaign"
+                  placeholder="Search by Lead Campaign"
+                  fontWeight="500"
+                />
+                <Text mb="10px" color={"red"}>
+                  {" "}
+                  {errors.leadCampaign &&
+                    touched.leadCampaign &&
+                    errors.leadCampaign}
+                </Text>
+              </GridItem>
+              <GridItem colSpan={{ base: 12, md: 6 }}>
+                <FormLabel
+                  display="flex"
+                  ms="4px"
+                  fontSize="sm"
+                  fontWeight="600"
+                  color={"#000"}
+                  mb="0"
+                  mt={2}
+                >
+                  Lead Medium
+                </FormLabel>
+                <Input
+                  fontSize="sm"
+                  onChange={handleChange}
+                  onBlur={handleBlur}
+                  value={values?.leadSource}
+                  name="nationality"
+                  placeholder="Search by Lead Source"
+                  fontWeight="500"
+                />
+                <Text mb="10px" color={"red"}>
+                  {" "}
+                  {errors.leadSource && touched.leadSource && errors.leadSource}
+                </Text>
+              </GridItem>
+              <GridItem colSpan={{ base: 12, md: 6 }}>
+                <FormLabel
+                  display="flex"
+                  ms="4px"
+                  fontSize="sm"
+                  fontWeight="600"
+                  color={"#000"}
+                  mb="0"
+                  mt={2}
+                >
+                  Time To Call
+                </FormLabel>
+                <Input
+                  fontSize="sm"
+                  onChange={handleChange}
+                  onBlur={handleBlur}
+                  value={values?.leadSource}
+                  name="timetocall"
+                  placeholder="Search by Timetocall"
+                  fontWeight="500"
+                />
+                <Text mb="10px" color={"red"}>
+                  {" "}
+                  {errors.timetocall && touched.timetocall && errors.timetocall}
+                </Text>
+              </GridItem>
+              <GridItem colSpan={{ base: 12, md: 6 }}>
+                <FormLabel
+                  display="flex"
+                  ms="4px"
+                  fontSize="sm"
+                  fontWeight="600"
+                  color={"#000"}
+                  mb="0"
+                  mt={2}
+                >
+                  Are you in UAE
+                </FormLabel>
+                <Input
+                  fontSize="sm"
+                  onChange={handleChange}
+                  onBlur={handleBlur}
+                  value={values?.r_u_in_uae}
+                  name="r_u_in_uae"
+                  placeholder="Search by Are you in UAE"
+                  fontWeight="500"
+                />
+                <Text mb="10px" color={"red"}>
+                  {" "}
+                  {errors.r_u_in_uae && touched.r_u_in_uae && errors.r_u_in_uae}
                 </Text>
               </GridItem>
               {/* <Checkbox name="buyAble"  checked={values.buyAble}

@@ -24,9 +24,7 @@ import { Provider, useSelector } from "react-redux";
 import store from "./redux/store";
 import { useDispatch } from "react-redux";
 import { getApi } from "services/api";
-import { setTree, setUsers } from "./redux/localSlice";
-import ContextProvider from "contexts/store";
-import LeadCycle from "views/admin/leadCycle";
+import { setTree,setUsers } from "./redux/localSlice";
 
 function App() {
   const token = localStorage.getItem("token") || null;
@@ -52,6 +50,7 @@ function App() {
     }, 0);
   };
 
+  
   const fetchUsers = async () => {
     setAppLoaded(false);
     const response = await getApi("api/user/");
@@ -67,8 +66,8 @@ function App() {
     if (getToken() && user2) {
       fetchTree();
       fetchUsers();
-    } else if (!getToken()) {
-      setAppLoaded(true);
+    } else if(!getToken()) {
+      setAppLoaded(true); 
     }
   }, [user2]);
 
@@ -89,7 +88,6 @@ function App() {
             <Route path="/*" element={<AuthLayout />} />
           )}
         </Routes>
-        <LeadCycle />
       </>
     );
   else
@@ -109,20 +107,16 @@ function App() {
 
 ReactDOM.render(
   <Provider store={store}>
-    <ContextProvider>
-      <ChakraProvider theme={theme} cssVarsRoot="body">
-        <React.StrictMode>
-          <ThemeEditorProvider>
-            <Router>
-              <ColorModeScript
-                initialColorMode={theme.config.initialColorMode}
-              />
-              <App />a{" "}
-            </Router>
-          </ThemeEditorProvider>
-        </React.StrictMode>
-      </ChakraProvider>
-    </ContextProvider>
+    <ChakraProvider theme={theme} cssVarsRoot="body">
+      <React.StrictMode>
+        <ThemeEditorProvider>
+          <Router>
+            <ColorModeScript initialColorMode={theme.config.initialColorMode} />
+            <App />
+          </Router>
+        </ThemeEditorProvider>
+      </React.StrictMode>
+    </ChakraProvider>
   </Provider>,
   document.getElementById("root")
 );

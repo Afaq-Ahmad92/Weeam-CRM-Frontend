@@ -86,7 +86,6 @@ import AddTask from "./addTask";
 import LeadsModal from "../LeadsModal";
 import LastNoteText from "./LastNoteText";
 import AdvancedSearchModal from "./AdvancedSearchModal";
-import { useStateContext } from "contexts/store";
 // import SizeExample from "./Dummy";
 
 export default function CheckTable(props) {
@@ -125,10 +124,9 @@ export default function CheckTable(props) {
   const [selectedValues, setSelectedValues] = useState([]);
   const [getTagValues, setGetTagValues] = useState([]);
   const [gopageValue, setGopageValue] = useState(1);
-  const { isLeadCycle, setIsLeadCycle } = useStateContext();
 
   const user = JSON.parse(localStorage.getItem("user"));
-  console.log("User.....", user);
+  console.log("User.....", user)
   const tree = useSelector((state) => state.user.tree);
 
   const [leadsModal, setLeadsModal] = useState({
@@ -139,11 +137,7 @@ export default function CheckTable(props) {
   const [addEmailHistory, setAddEmailHistory] = useState(false);
   const [addPhoneCall, setAddPhoneCall] = useState(false);
   const [advaceSearch, setAdvaceSearch] = useState(false);
-  const {
-    isOpen: isSearchOpen,
-    onOpen: onSearchOpen,
-    onClose: onSearchClose,
-  } = useDisclosure();
+  const { isOpen:isSearchOpen, onOpen:onSearchOpen, onClose:onSearchClose } = useDisclosure();
   const [searchClear, setSearchClear] = useState(false);
   const [selectedId, setSelectedId] = useState();
   const [callSelectedId, setCallSelectedId] = useState();
@@ -202,19 +196,20 @@ export default function CheckTable(props) {
     setTempSelectedColumns(dynamicColumns);
     setManageColumns(!manageColumns ? !manageColumns : false);
   };
+  
 
-  const refreshData = () => {
-    if (displaySearchData) {
+  const refreshData =()=>{
+    if(displaySearchData){
       fetchSearchedData(searchbox.current?.value?.trim() || "", 1, pageSize);
-    } else if (displayAdvSearchData) {
+    }else if(displayAdvSearchData){
       const data = Object.fromEntries(
         Object.entries(values).filter(([key, value]) => value !== "")
       );
-      fetchAdvancedSearch(data, pageIndex + 1, pageSize);
-    } else {
-      fetchData(pageIndex + 1, pageSize);
+      fetchAdvancedSearch(data, pageIndex+1, pageSize);
+    }else {
+      fetchData(pageIndex+1,pageSize);
     }
-  };
+  }
 
   const initialValues = {
     leadName: "",
@@ -248,10 +243,10 @@ export default function CheckTable(props) {
       const data = Object.fromEntries(
         Object.entries(values).filter(([key, value]) => value !== "")
       );
-      Object.keys(data).forEach((key) => {
-        if (typeof data[key] === "string") {
+      Object.keys(data).forEach(key => {
+        if (typeof data[key] === 'string') {
           data[key] = data[key].trim();
-          if (key === "leadPhoneNumber") {
+          if (key === 'leadPhoneNumber') {
             data[key] = Number(data[key]);
           }
         }
@@ -271,16 +266,12 @@ export default function CheckTable(props) {
       //     (user) => user?._id?.toString() === values?.agentAssigned
       //   );
       // }
-      if (values?.agentAssigned) {
-        const agentsArray = Object.values(tree.agents).flatMap(
-          (managerArray) => managerArray
-        );
-        agent = agentsArray.find(
-          (agent) => agent?._id?.toString() === values?.agentAssigned
-        );
+      if(values?.agentAssigned){
+        const agentsArray = Object.values(tree.agents).flatMap(managerArray => managerArray);
+       agent = agentsArray.find(agent=>agent?._id?.toString() === values?.agentAssigned)
       }
-      if (values?.agentAssigned == -1) {
-        agent = { firstName: "No", lastName: " Agent" };
+      if(values?.agentAssigned == -1){
+        agent ={ firstName:"No",lastName:" Agent"}
       }
       let manager = null;
       if (values?.managerAssigned) {
@@ -288,8 +279,8 @@ export default function CheckTable(props) {
           (user) => user?._id?.toString() === values?.managerAssigned
         );
       }
-      if (values?.managerAssigned == -1) {
-        manager = { firstName: "No", lastName: "Manager" };
+      if(values?.managerAssigned == -1){
+        manager = {firstName:"No",lastName:"Manager"}
       }
       let getValue = [
         values.leadName,
@@ -316,7 +307,7 @@ export default function CheckTable(props) {
   const handleClear = () => {
     searchbox.current.value = "";
     setDisplaySearchData(false);
-    setDisplayAdvSearchData(false);
+    setDisplayAdvSearchData(false)
     setSearchedData([]);
     setUpdatedPage(0);
     fetchData(1, pageSize);
@@ -336,8 +327,7 @@ export default function CheckTable(props) {
     dirty,
   } = formik;
 
-  const hiddenFields =
-    JSON.parse(localStorage.getItem("hiddenCols") || "[]") || [];
+  const hiddenFields = JSON.parse(localStorage.getItem("hiddenCols") || "[]") || [];
 
   const [columnVisibility, setColumnVisibility] = useState(
     hiddenFields?.reduce((acc, key) => {
@@ -505,7 +495,7 @@ export default function CheckTable(props) {
     setUpdatedPage(0);
     if (displaySearchData) {
       fetchSearchedData(searchbox.current?.value?.trim());
-    } else if (displayAdvSearchData) {
+    } else if(displayAdvSearchData){
       fetchAdvancedSearch();
     } else {
       fetchData();
@@ -531,12 +521,12 @@ export default function CheckTable(props) {
         pageIndex + 1,
         pageSize
       );
-    } else if (displayAdvSearchData) {
+    }else if(displayAdvSearchData){
       const data = Object.fromEntries(
         Object.entries(values).filter(([key, value]) => value !== "")
       );
-      fetchAdvancedSearch(data, pageIndex + 1, pageSize);
-      console.log(values, "values of the form ");
+      fetchAdvancedSearch(data,pageIndex+1,pageSize)
+     console.log(values,'values of the form ')
     } else {
       fetchData(pageIndex + 1, pageSize);
     }
@@ -547,12 +537,13 @@ export default function CheckTable(props) {
     setGopageValue(1);
     if (displaySearchData) {
       fetchSearchedData(searchbox.current?.value?.trim() || "", 1, pageSize);
-    } else if (displayAdvSearchData) {
-      const data = Object.fromEntries(
+    } else if(displayAdvSearchData){
+    const data = Object.fromEntries(
         Object.entries(values).filter(([key, value]) => value !== "")
       );
-      fetchAdvancedSearch(data, 1, pageSize);
-    } else {
+      fetchAdvancedSearch(data,1,pageSize)
+    }
+    else {
       fetchData(1, pageSize);
     }
   }, [pageSize]);
@@ -653,7 +644,7 @@ export default function CheckTable(props) {
               >
                 Advance Search
               </Button>
-              {displaySearchData || displayAdvSearchData ? (
+              {(displaySearchData || displayAdvSearchData)? (
                 <Button
                   variant="outline"
                   size="sm"
@@ -1045,16 +1036,15 @@ export default function CheckTable(props) {
                           );
                         } else if (cell?.column.Header === "Manager") {
                           data = (
-                            <RenderManager
+                             <RenderManager
                               fetchData={fetchData}
-                              displaySearchData={
-                                displaySearchData || displayAdvSearchData
-                              }
+                              displaySearchData={displaySearchData || displayAdvSearchData}
                               setSearchedData={setSearchedData}
                               pageIndex={pageIndex}
                               setData={setData}
                               leadID={row?.original?._id?.toString()}
                               value={cell?.value}
+                              isAdmin= {user?.role === "superAdmin"}
                             />
                           );
                         } else if (cell?.column.Header === "Agent") {
@@ -1065,9 +1055,7 @@ export default function CheckTable(props) {
                                 fetchData={fetchData}
                                 leadID={row?.original?._id?.toString()}
                                 managerAssigned={row?.original?.managerAssigned}
-                                displaySearchData={
-                                  displaySearchData || displayAdvSearchData
-                                }
+                                displaySearchData={displaySearchData || displayAdvSearchData}
                                 setSearchedData={setSearchedData}
                                 value={cell?.value}
                               />
@@ -1125,7 +1113,7 @@ export default function CheckTable(props) {
                               <LastNoteText text={cell?.value} />
                             </Box>
                           );
-                        } else if (cell?.column.Header === "Country Source") {
+                        } else if (cell?.column.Header === "IP") {
                           data = (
                             <Text fontSize={"sm"}>{cell?.value || "-"}</Text>
                           );
@@ -1174,8 +1162,7 @@ export default function CheckTable(props) {
                                   minW={"fit-content"}
                                   transform={"translate(1520px, 173px);"}
                                 >
-                                  {access?.update &&
-                                  user?.role == "superAdmin" ? (
+                                  {access?.update && user?.role == "superAdmin" ?  (
                                     <MenuItem
                                       py={2.5}
                                       onClick={() => {
@@ -1185,10 +1172,8 @@ export default function CheckTable(props) {
                                       icon={<EditIcon fontSize={15} mb={1} />}
                                     >
                                       Edit
-                                    </MenuItem>
-                                  ) : (
-                                    ""
-                                  )}
+                                    </MenuItem> 
+                                  ):""}
                                   {callAccess?.create && (
                                     <MenuItem
                                       py={2.5}
@@ -1221,13 +1206,9 @@ export default function CheckTable(props) {
                                     py={2.5}
                                     width={"max-content"}
                                     onClick={() => {
-                                      // navigate(
-                                      //   "/leadCycle/" + row?.original?._id
-                                      // );
-                                      setIsLeadCycle({
-                                        isOpen: true,
-                                        id: row?.original?._id,
-                                      });
+                                      navigate(
+                                        "/leadCycle/" + row?.original?._id
+                                      );
                                     }}
                                     icon={<FaHistory fontSize={15} mb={1} />}
                                   >
@@ -1305,8 +1286,7 @@ export default function CheckTable(props) {
                                       View
                                     </MenuItem>
                                   )} */}
-                                  {access?.delete &&
-                                  user?.role == "superAdmin" ? (
+                                  {access?.delete && user?.role == "superAdmin" ? (
                                     <MenuItem
                                       py={2.5}
                                       color={"red"}
@@ -1320,9 +1300,7 @@ export default function CheckTable(props) {
                                     >
                                       Delete
                                     </MenuItem>
-                                  ) : (
-                                    ""
-                                  )}
+                                  ):""}
                                 </MenuList>
                               </Menu>
                             </Text>
@@ -1354,6 +1332,7 @@ export default function CheckTable(props) {
                     </Tr>
                   );
                 })
+                
               )}
             </Tbody>
           </Table>
@@ -1494,9 +1473,9 @@ export default function CheckTable(props) {
                 localStorage.setItem(
                   "hiddenCols",
                   JSON.stringify(
-                    dynamicColumns
-                      .filter((d) => !tempAccessors.includes(d.accessor))
-                      .map((d) => d.accessor)
+                    dynamicColumns.filter(
+                      (d) => !tempAccessors.includes(d.accessor)
+                    ).map((d) => d.accessor)
                   )
                 );
                 setManageColumns(false);

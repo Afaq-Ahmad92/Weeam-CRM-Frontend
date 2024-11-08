@@ -11,14 +11,20 @@ import { getApi } from "services/api";
 import { HasAccess } from "../../../redux/accessUtils";
 import CheckTable from "./components/CheckTable";
 import { postApi } from "services/api";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { toast } from "react-toastify";
 import axios from "axios";
 import { constant } from "constant";
+import { setLeadPoolState } from "../../../redux/localSlice";
 const Index = () => {
-  const [displayAdvSearchData,setDisplayAdvSearchData] = useState(false)
+  const dispatch = useDispatch();
+  const [displayAdvSearchData, setDisplayAdvSearchData] = useState(false);
   const user = JSON.parse(localStorage.getItem("user"));
   const role = user?.roles[0]?.roleName;
+  const { leadPoolState: currentState } = useSelector((state) => state?.user);
+  function setCurrentState(value) {
+    dispatch(setLeadPoolState(value));
+  }
   const [tableColumns, setTableColumns] = useState([
     // { Header: "#", accessor: "_id", isSortable: false, width: 10 },
     { Header: "Name", accessor: "leadName", width: 20 },
@@ -34,15 +40,35 @@ const Index = () => {
     // { Header: "Action", isSortable: false, center: true },
   ]);
   const [tableColumnsManager, setTableColumnsManager] = useState([
-    { Header: "#", accessor: "_id", isSortable: false, width: 10 },
+    // { Header: "#", accessor: "_id", isSortable: false, width: 10 },
+    // { Header: "Name", accessor: "leadName", width: 20 },
+    // { Header: "Manager", accessor: "managerAssigned" },
+    // { Header: "Agent", accessor: "agentAssigned" },
+    // { Header: "Status", accessor: "leadStatus" },
+    // { Header: "Approval Status", accessor: "leadWhatsappNumber" },
+    // { Header: "Intrest", accessor: "interest" },
+    // { Header: "Nationality", accessor: "nationality" },
+    // { Header: "Action", isSortable: false, center: true },
+    { Header: "#", accessor: "intID", isSortable: false, width: 10 },
     { Header: "Name", accessor: "leadName", width: 20 },
-    { Header: "Manager", accessor: "managerAssigned" },
+    // { Header: "Manager", accessor: "managerAssigned" },
     { Header: "Agent", accessor: "agentAssigned" },
     { Header: "Status", accessor: "leadStatus" },
-    { Header: "Approval Status", accessor: "leadWhatsappNumber" },
-    { Header: "Intrest", accessor: "interest" },
+    // { Header: "Whatsapp Number", accessor: "leadWhatsappNumber" },
+    // { Header: "Phone Number", accessor: "leadPhoneNumber" },
+    { Header: "Last Note", width: 100, accessor: "lastNote" },
+    { Header: "Date And Time", accessor: "createdDate", width: 40 },
+    { Header: "Timetocall", accessor: "timetocall" },
     { Header: "Nationality", accessor: "nationality" },
-    { Header: "Action", isSortable: false, center: true },
+    { Header: "Country Source", accessor: "ip" },
+    { Header: "Lead Address", accessor: "leadAddress" },
+    { Header: "Lead Campaign", accessor: "leadCampaign" },
+    { Header: "Source Content", accessor: "leadSourceDetails" },
+    // { Header: "Lead Email", accessor: "leadEmail" },
+    { Header: "Lead Medium", accessor: "leadSourceMedium" },
+    { Header: "Campaign Page URL", accessor: "pageUrl" },
+    { Header: "Are you in UAE?", accessor: "r_u_in_uae" },
+    { Header: "Action", accessor: "" },
   ]);
   const [tableColumnsAgent, setTableColumnsAgent] = useState([
     // { Header: "#", accessor: "_id", isSortable: false, width: 10 },
@@ -56,10 +82,10 @@ const Index = () => {
     { Header: "#", accessor: "intID", isSortable: false, width: 10 },
     { Header: "Name", accessor: "leadName", width: 20 },
     { Header: "Manager", accessor: "managerAssigned" },
-    { Header: "Agent", accessor: "agentAssigned" },
+    // { Header: "Agent", accessor: "agentAssigned" },
     { Header: "Status", accessor: "leadStatus" },
     //{ Header: "Whatsapp Number", accessor: "leadWhatsappNumber" },
-   // { Header: "Phone Number", accessor: "leadPhoneNumber" },
+    // { Header: "Phone Number", accessor: "leadPhoneNumber" },
     { Header: "Last Note", width: 100, accessor: "lastNote" },
     { Header: "Date And Time", accessor: "createdDate", width: 40 },
     { Header: "Timetocall", accessor: "timetocall" },
@@ -68,7 +94,7 @@ const Index = () => {
     { Header: "Lead Address", accessor: "leadAddress" },
     { Header: "Lead Campaign", accessor: "leadCampaign" },
     { Header: "Source Content", accessor: "leadSourceDetails" },
-   // { Header: "Lead Email", accessor: "leadEmail" },
+    // { Header: "Lead Email", accessor: "leadEmail" },
     { Header: "Lead Medium", accessor: "leadSourceMedium" },
     { Header: "Campaign Page URL", accessor: "pageUrl" },
     { Header: "Are you in UAE?", accessor: "r_u_in_uae" },
@@ -87,7 +113,7 @@ const Index = () => {
   const [pages, setPages] = useState(0);
   const [approvals, setApprovals] = useState([]);
   const [filteredLeads, setFilteredLeads] = useState([]);
-  const [currentState, setCurrentState] = useState("all_leads");
+  // const [currentState, setCurrentState] = useState("all_leads");
   const tree = useSelector((state) => state.user.tree);
 
   const [dynamicColumns, setDynamicColumns] = useState(
@@ -136,9 +162,10 @@ const Index = () => {
   useEffect(() => {
     //  fetchApprovals();
     const source = axios.CancelToken.source();
-    fetchData(1,10,source);
-    return ()=> {
-      source.cancel();}
+    fetchData(1, 10, source);
+    return () => {
+      source.cancel();
+    };
   }, [currentState]);
   const fetchAdvancedSearch = async (data = {}, pageNo = 1, pageSize = 200) => {
     setIsLoding(true);
@@ -163,16 +190,15 @@ const Index = () => {
     );
     setDisplayAdvSearchData(true);
     setIsLoding(false);
-    const newData =  result.data?.result?.map((lead)=>{
-      if(lead?.ip){
-       const parts = lead?.ip.split('-');
-        
-   // Return only the IP part, which is the first element of the array
-     lead.ip = parts?.length>0?parts[1]:parts[0];
-      }
-     return {...lead}
+    const newData = result.data?.result?.map((lead) => {
+      if (lead?.ip) {
+        const parts = lead?.ip.split("-");
 
-   })
+        // Return only the IP part, which is the first element of the array
+        lead.ip = parts?.length > 0 ? parts[1] : parts[0];
+      }
+      return { ...lead };
+    });
     setSearchedData(newData || []);
     setPages(result.data?.totalPages || 0);
     setTotalLeads(result.data?.totalLeads || 0);
@@ -194,26 +220,25 @@ const Index = () => {
         // { Header: "Nationality", accessor: "nationality" },
         // { Header: "Action", isSortable: false, center: true },
         { Header: "#", accessor: "intID", isSortable: false, width: 10 },
-    { Header: "Name", accessor: "leadName", width: 20 },
-    { Header: "Manager", accessor: "managerAssigned" },
-    { Header: "Agent", accessor: "agentAssigned" },
-    { Header: "Status", accessor: "leadStatus" },
-    { Header: "Whatsapp Number", accessor: "leadWhatsappNumber" },
-    { Header: "Phone Number", accessor: "leadPhoneNumber" },
-    { Header: "Last Note", width: 100, accessor: "lastNote" },
-    { Header: "Date And Time", accessor: "createdDate", width: 40 },
-    { Header: "Timetocall", accessor: "timetocall" },
-    { Header: "Nationality", accessor: "nationality" },
-    { Header: "Country Source", accessor: "ip" },
-    { Header: "Lead Address", accessor: "leadAddress" },
-    { Header: "Lead Campaign", accessor: "leadCampaign" },
-    { Header: "Source Content", accessor: "leadSourceDetails" },
-    { Header: "Lead Email", accessor: "leadEmail" },
-    { Header: "Lead Medium", accessor: "leadSourceMedium" },
-    { Header: "Campaign Page URL", accessor: "pageUrl" },
-    { Header: "Are you in UAE?", accessor: "r_u_in_uae" },
-    { Header: "Action", accessor: "" },
-
+        { Header: "Name", accessor: "leadName", width: 20 },
+        // { Header: "Manager", accessor: "managerAssigned" },
+        { Header: "Agent", accessor: "agentAssigned" },
+        { Header: "Status", accessor: "leadStatus" },
+        { Header: "Whatsapp Number", accessor: "leadWhatsappNumber" },
+        { Header: "Phone Number", accessor: "leadPhoneNumber" },
+        { Header: "Last Note", width: 100, accessor: "lastNote" },
+        { Header: "Date And Time", accessor: "createdDate", width: 40 },
+        { Header: "Timetocall", accessor: "timetocall" },
+        { Header: "Nationality", accessor: "nationality" },
+        { Header: "Country Source", accessor: "ip" },
+        { Header: "Lead Address", accessor: "leadAddress" },
+        { Header: "Lead Campaign", accessor: "leadCampaign" },
+        { Header: "Source Content", accessor: "leadSourceDetails" },
+        { Header: "Lead Email", accessor: "leadEmail" },
+        { Header: "Lead Medium", accessor: "leadSourceMedium" },
+        { Header: "Campaign Page URL", accessor: "pageUrl" },
+        { Header: "Are you in UAE?", accessor: "r_u_in_uae" },
+        { Header: "Action", accessor: "" },
       ]);
       setTableColumnsAgent([
         // { Header: "#", accessor: "intID", isSortable: false, width: 10 },
@@ -229,46 +254,45 @@ const Index = () => {
         // { Header: "Nationality", accessor: "nationality" },
         // { Header: "Action", isSortable: false, center: true },
         { Header: "Name", accessor: "leadName", width: 20 },
-    { Header: "Manager", accessor: "managerAssigned" },
-    { Header: "Agent", accessor: "agentAssigned" },
-    { Header: "Status", accessor: "leadStatus" },
-    { Header: "Whatsapp Number", accessor: "leadWhatsappNumber" },
-    { Header: "Phone Number", accessor: "leadPhoneNumber" },
-    { Header: "Last Note", width: 100, accessor: "lastNote" },
-    { Header: "Date And Time", accessor: "createdDate", width: 40 },
-    { Header: "Timetocall", accessor: "timetocall" },
-    { Header: "Nationality", accessor: "nationality" },
-    { Header: "Country Source", accessor: "ip" },
-    { Header: "Lead Address", accessor: "leadAddress" },
-    { Header: "Lead Campaign", accessor: "leadCampaign" },
-    { Header: "Source Content", accessor: "leadSourceDetails" },
-    { Header: "Lead Email", accessor: "leadEmail" },
-    { Header: "Lead Medium", accessor: "leadSourceMedium" },
-    { Header: "Campaign Page URL", accessor: "pageUrl" },
-    { Header: "Are you in UAE?", accessor: "r_u_in_uae" },
-    { Header: "Action", accessor: "" },
-
+        { Header: "Manager", accessor: "managerAssigned" },
+        // { Header: "Agent", accessor: "agentAssigned" },
+        { Header: "Status", accessor: "leadStatus" },
+        { Header: "Whatsapp Number", accessor: "leadWhatsappNumber" },
+        { Header: "Phone Number", accessor: "leadPhoneNumber" },
+        { Header: "Last Note", width: 100, accessor: "lastNote" },
+        { Header: "Date And Time", accessor: "createdDate", width: 40 },
+        { Header: "Timetocall", accessor: "timetocall" },
+        { Header: "Nationality", accessor: "nationality" },
+        { Header: "Country Source", accessor: "ip" },
+        { Header: "Lead Address", accessor: "leadAddress" },
+        { Header: "Lead Campaign", accessor: "leadCampaign" },
+        { Header: "Source Content", accessor: "leadSourceDetails" },
+        { Header: "Lead Email", accessor: "leadEmail" },
+        { Header: "Lead Medium", accessor: "leadSourceMedium" },
+        { Header: "Campaign Page URL", accessor: "pageUrl" },
+        { Header: "Are you in UAE?", accessor: "r_u_in_uae" },
+        { Header: "Action", accessor: "" },
       ]);
     } else {
       setTableColumnsManager([
-    { Header: "Name", accessor: "leadName", width: 20 },
-   // { Header: "Manager", accessor: "managerAssigned" },
-    //{ Header: "Agent", accessor: "agentAssigned" },
-    //{ Header: "Status", accessor: "leadStatus" },
-    //{ Header: "Whatsapp Number", accessor: "leadWhatsappNumber" },
-    //{ Header: "Phone Number", accessor: "leadPhoneNumber" },
-   // { Header: "Last Note", width: 100, accessor: "lastNote" },
-   // { Header: "Date And Time", accessor: "createdDate", width: 40 },
-   // { Header: "Timetocall", accessor: "timetocall" },
-    { Header: "Nationality", accessor: "nationality" },
-    //{ Header: "IP", accessor: "ip" },
-    //{ Header: "Lead Address", accessor: "leadAddress" },
-    //{ Header: "Lead Campaign", accessor: "leadCampaign" },
-    //{ Header: "Source Content", accessor: "leadSourceDetails" },
-   // { Header: "Lead Email", accessor: "leadEmail" },
-    //{ Header: "Lead Medium", accessor: "leadSourceMedium" },
-    //{ Header: "Campaign Page URL", accessor: "pageUrl" },
-    //{ Header: "Are you in UAE?", accessor: "r_u_in_uae" },
+        { Header: "Name", accessor: "leadName", width: 20 },
+        // { Header: "Manager", accessor: "managerAssigned" },
+        { Header: "Agent", accessor: "agentAssigned" },
+        { Header: "Status", accessor: "leadStatus" },
+        //{ Header: "Whatsapp Number", accessor: "leadWhatsappNumber" },
+        //{ Header: "Phone Number", accessor: "leadPhoneNumber" },
+        { Header: "Last Note", width: 100, accessor: "lastNote" },
+        { Header: "Date And Time", accessor: "createdDate", width: 40 },
+        { Header: "Timetocall", accessor: "timetocall" },
+        { Header: "Nationality", accessor: "nationality" },
+        { Header: "Country Source", accessor: "ip" },
+        { Header: "Lead Address", accessor: "leadAddress" },
+        { Header: "Lead Campaign", accessor: "leadCampaign" },
+        { Header: "Source Content", accessor: "leadSourceDetails" },
+        //  { Header: "Lead Email", accessor: "leadEmail" },
+        { Header: "Lead Medium", accessor: "leadSourceMedium" },
+        { Header: "Campaign Page URL", accessor: "pageUrl" },
+        { Header: "Are you in UAE?", accessor: "r_u_in_uae" },
 
         currentState === "all_leads" && {
           Header: "Buy",
@@ -277,8 +301,7 @@ const Index = () => {
         },
 
         currentState === "pending" && { Header: "Cancel" },
-    { Header: "Action", accessor: "" },
-
+        { Header: "Action", accessor: "" },
       ]);
       setTableColumnsAgent([
         // { Header: "#", accessor: "_id", isSortable: false, width: 10 },
@@ -290,24 +313,24 @@ const Index = () => {
         //{ Header: "Nationality", accessor: "nationality" },
         //{ Header: "Last Note", width: 100, accessor: "lastNote" },
         //{ Header: "Intrest", accessor: "interest" },
-    { Header: "Name", accessor: "leadName", width: 20 },
-    //{ Header: "Manager", accessor: "managerAssigned" },
-    //{ Header: "Agent", accessor: "agentAssigned" },
-   // { Header: "Status", accessor: "leadStatus" },
-   // { Header: "Whatsapp Number", accessor: "leadWhatsappNumber" },
-   // { Header: "Phone Number", accessor: "leadPhoneNumber" },
-    { Header: "Last Note", width: 100, accessor: "lastNote" },
-    //{ Header: "Date And Time", accessor: "createdDate", width: 40 },
-    //{ Header: "Timetocall", accessor: "timetocall" },
-    { Header: "Nationality", accessor: "nationality" },
-    //{ Header: "IP", accessor: "ip" },
-    //{ Header: "Lead Address", accessor: "leadAddress" },
-    //{ Header: "Lead Campaign", accessor: "leadCampaign" },
-    //{ Header: "Source Content", accessor: "leadSourceDetails" },
-   // { Header: "Lead Email", accessor: "leadEmail" },
-    //{ Header: "Lead Medium", accessor: "leadSourceMedium" },
-    //{ Header: "Campaign Page URL", accessor: "pageUrl" },
-    //{ Header: "Are you in UAE?", accessor: "r_u_in_uae" },
+        { Header: "Name", accessor: "leadName", width: 20 },
+        //{ Header: "Manager", accessor: "managerAssigned" },
+        //{ Header: "Agent", accessor: "agentAssigned" },
+        { Header: "Status", accessor: "leadStatus" },
+        // { Header: "Whatsapp Number", accessor: "leadWhatsappNumber" },
+        // { Header: "Phone Number", accessor: "leadPhoneNumber" },
+        { Header: "Last Note", width: 100, accessor: "lastNote" },
+        { Header: "Date And Time", accessor: "createdDate", width: 40 },
+        { Header: "Timetocall", accessor: "timetocall" },
+        { Header: "Nationality", accessor: "nationality" },
+        { Header: "Country Source", accessor: "ip" },
+        { Header: "Lead Address", accessor: "leadAddress" },
+        { Header: "Lead Campaign", accessor: "leadCampaign" },
+        { Header: "Source Content", accessor: "leadSourceDetails" },
+        //  { Header: "Lead Email", accessor: "leadEmail" },
+        { Header: "Lead Medium", accessor: "leadSourceMedium" },
+        { Header: "Campaign Page URL", accessor: "pageUrl" },
+        { Header: "Are you in UAE?", accessor: "r_u_in_uae" },
         currentState === "all_leads" && {
           Header: "Buy",
           isSortable: false,
@@ -315,8 +338,7 @@ const Index = () => {
         },
 
         currentState === "pending" && { Header: "Cancel" },
-    { Header: "Action", accessor: "" },
-
+        { Header: "Action", accessor: "" },
       ]);
     }
 
@@ -345,14 +367,16 @@ const Index = () => {
   const dataColumn = dynamicColumns?.filter((item) =>
     selectedColumns?.find((colum) => colum?.Header === item.Header)
   );
-  
 
-  const fetchData = async (pageNo = 1, pageSize = 10,source) => {
-    if (user.role !== "superAdmin" && currentState === "all_leads") {
+  const fetchData = async (pageNo = 1, pageSize = 10, source) => {
+    if (
+      user.role !== "superAdmin" &&
+      (currentState === "all_leads" || currentState === "Accepted")
+    ) {
       setIsLoding(true);
       let result = await getApi(
         // user.role === "superAdmin"
-        true
+        currentState === "all_leads"
           ? "api/lead/" +
               "?dateTime=" +
               dateTime?.from +
@@ -367,7 +391,10 @@ const Index = () => {
               user.roles[0]?.roleName
             }&dateTime=${
               dateTime?.from + "|" + dateTime?.to
-            }&page=${pageNo}&pageSize=${pageSize}`,null,"baseUrl",source
+            }&page=${pageNo}&pageSize=${pageSize}`,
+        null,
+        "baseUrl",
+        source
       );
       const newData = result.data?.result?.map((lead) => {
         if (lead?.ip) {
@@ -402,7 +429,7 @@ const Index = () => {
             managerId: user?.roles[0]?.roleName == "Manager" ? user?._id : "",
             agentId: user?.roles[0]?.roleName == "Agent" ? user?._id : "",
           },
-         cancelToken:source?.token
+          cancelToken: source?.token,
         }
       );
       //  setApprovals()
@@ -554,10 +581,14 @@ const Index = () => {
             action={action}
             fetchSearchedData={fetchSearchedData}
             setSearchedData={setSearchedData}
-            allData={(displaySearchData || displayAdvSearchData) ? searchedData : data}
+            allData={
+              displaySearchData || displayAdvSearchData ? searchedData : data
+            }
             setData={setFilteredLeads}
             displaySearchData={displaySearchData}
-            tableData={(displaySearchData || displayAdvSearchData) ? searchedData : data}
+            tableData={
+              displaySearchData || displayAdvSearchData ? searchedData : data
+            }
             fetchData={fetchData}
             setDisplaySearchData={setDisplaySearchData}
             displayAdvSearchData={displayAdvSearchData}
@@ -568,12 +599,9 @@ const Index = () => {
             setSelectedColumns={setSelectedColumns}
             emailAccess={emailAccess}
             callAccess={callAccess}
-    
-    setDisplayAdvSearchData={setDisplayAdvSearchData}
-
-    
-    fetchAdvancedSearch={fetchAdvancedSearch}
-
+            setDisplayAdvSearchData={setDisplayAdvSearchData}
+            fetchAdvancedSearch={fetchAdvancedSearch}
+            currentState={currentState}
           />
         </GridItem>
       </Grid>
