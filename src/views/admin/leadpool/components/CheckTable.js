@@ -95,6 +95,8 @@ import { getUserNameById } from "utils";
 import { IoMdClose } from "react-icons/io";
 import { deleteApi } from "services/api";
 import LastNoteText from "views/admin/lead/components/LastNoteText";
+import { useStateContext } from "contexts/store";
+
 export default function CheckTable(props) {
   const {
     tableData,
@@ -174,6 +176,7 @@ export default function CheckTable(props) {
     setTempSelectedColumns(dataColumn);
   }, [dataColumn]);
   console.log(dataColumn, "dataColumn");
+  const { isLeadCycle, setIsLeadCycle } = useStateContext();
 
   const csvColumns = [
     { Header: "Name", accessor: "leadName" },
@@ -223,7 +226,7 @@ export default function CheckTable(props) {
 
       const r = await getApi(`api/user/view/${userId}`);
       const response = await putApi(`api/user/edit/${userId}`, {
-        ...r?.data,
+        // ...r?.data,
         coins:
           lead?.data?.lead?.leadStatus == "new"
             ? r?.data?.coins + 300
@@ -682,7 +685,7 @@ export default function CheckTable(props) {
             const lead = await getApi(`api/lead/view/${leadId}`);
             const r = await getApi(`api/user/view/${agentId}`);
             const res = await putApi(`api/user/edit/${agentId}`, {
-              ...r?.data,
+              // ...r?.data,
               coins:
                 lead?.data?.lead?.leadStatus == "new"
                   ? r?.data?.coins + 300
@@ -693,7 +696,7 @@ export default function CheckTable(props) {
             const lead = await getApi(`api/lead/view/${leadId}`);
             const r = await getApi(`api/user/view/${managerId}`);
             const res = await putApi(`api/user/edit/${managerId}`, {
-              ...r?.data,
+              // ...r?.data,
               coins:
                 lead?.data?.lead?.leadStatus == "new"
                   ? r?.data?.coins + 300
@@ -818,7 +821,7 @@ export default function CheckTable(props) {
 
       const r = await getApi(`api/user/view/${user?._id}`);
       const response = await putApi(`api/user/edit/${user?._id}`, {
-        ...r?.data,
+        // ...r?.data,
         coins:
           allData?.find((lead) => lead?._id == leadID)?.leadStatus == "new"
             ? r?.data?.coins - 300
@@ -1362,18 +1365,24 @@ export default function CheckTable(props) {
                                 {cell?.value?.text || cell?.value}
                               </Text>
                             );
-                        }else if (cell?.column.Header === "Manager") {
+                        } else if (cell?.column.Header === "Manager") {
                           data = (
-                             <RenderManager
+                            <RenderManager
                               fetchData={fetchData}
-                              displaySearchData={displaySearchData || displayAdvSearchData}
+                              displaySearchData={
+                                displaySearchData || displayAdvSearchData
+                              }
                               setSearchedData={setSearchedData}
                               pageIndex={pageIndex}
                               setData={setData}
                               leadID={row?.original?._id?.toString()}
                               value={cell?.value}
-                              isAdmin= {user?.role === "superAdmin"}
+                              isAdmin={user?.role === "superAdmin"}
                             />
+                          );
+                        } else if (cell?.column.Header === "Country Source") {
+                          data = (
+                            <Text fontSize={"sm"}>{cell?.value || "-"}</Text>
                           );
                         } else if (cell?.column.Header === "Whatsapp Number") {
                           data = (
@@ -1678,9 +1687,13 @@ export default function CheckTable(props) {
                                     py={2.5}
                                     width={"max-content"}
                                     onClick={() => {
-                                      navigate(
-                                        "/leadCycle/" + row?.original?._id
-                                      );
+                                      // navigate(
+                                      //   "/leadCycle/" + row?.original?._id
+                                      // );
+                                      setIsLeadCycle({
+                                        isOpen: true,
+                                        id: row?.original?._id,
+                                      });
                                     }}
                                     icon={<FaHistory fontSize={15} mb={1} />}
                                   >
