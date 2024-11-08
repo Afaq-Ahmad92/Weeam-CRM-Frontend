@@ -204,8 +204,9 @@ const View = ({ param, reFreshData, isInLeadPool }) => {
                   }}
                 >
                   <Tab>Information</Tab>
-                  {(currentState === "Accepted" ||
-                    window?.location?.pathname === "/lead") && <Tab>Notes</Tab>}
+                  {/* {(currentState === "Accepted" ||
+                    window?.location?.pathname === "/lead") && <Tab>Notes</Tab>} */}
+                    <Tab>Notes</Tab>
                   {/* <Tab> Communication</Tab>
                   <Tab>Document</Tab> */}
                 </TabList>
@@ -808,19 +809,22 @@ const View = ({ param, reFreshData, isInLeadPool }) => {
                         justifyContent={"flex-end"}
                         alignItems={"center"}
                       >
-                        <Button
-                          color="white"
-                          onClick={() => setNewNoteModal(true)}
-                          style={{
-                            padding: "0 20px",
-                            color: "white",
-                          }}
-                          leftIcon={<FaPlus />}
-                          size="sm"
-                          variant="brand"
-                        >
-                          Add New Note
-                        </Button>
+                        {(currentState === "Accepted" ||
+                          window?.location?.pathname === "/lead") && (
+                          <Button
+                            color="white"
+                            onClick={() => setNewNoteModal(true)}
+                            style={{
+                              padding: "0 20px",
+                              color: "white",
+                            }}
+                            leftIcon={<FaPlus />}
+                            size="sm"
+                            variant="brand"
+                          >
+                            Add New Note
+                          </Button>
+                        )}
                       </Flex>
                     </Flex>
                     <HSeparator />
