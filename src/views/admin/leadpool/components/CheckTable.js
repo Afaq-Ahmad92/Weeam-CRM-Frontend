@@ -230,7 +230,7 @@ export default function CheckTable(props) {
         coins:
           lead?.data?.lead?.leadStatus == "new"
             ? r?.data?.coins + 300
-            : r?.data?.coins + 150,
+            : r?.data?.coins + 50,
       });
 
       fetchData();
@@ -689,7 +689,7 @@ export default function CheckTable(props) {
               coins:
                 lead?.data?.lead?.leadStatus == "new"
                   ? r?.data?.coins + 300
-                  : r?.data?.coins + 150,
+                  : r?.data?.coins + 50,
             });
           } else {
             // alert(managerId);
@@ -700,7 +700,7 @@ export default function CheckTable(props) {
               coins:
                 lead?.data?.lead?.leadStatus == "new"
                   ? r?.data?.coins + 300
-                  : r?.data?.coins + 150,
+                  : r?.data?.coins + 50,
             });
           }
           toast.success("Request Rejected successfuly");
@@ -825,7 +825,7 @@ export default function CheckTable(props) {
         coins:
           allData?.find((lead) => lead?._id == leadID)?.leadStatus == "new"
             ? r?.data?.coins - 300
-            : r?.data?.coins - 150,
+            : r?.data?.coins - 50,
       });
 
       fetchData();
@@ -1656,14 +1656,14 @@ export default function CheckTable(props) {
                                     row?.original?.leadStatus == "new" ||
                                     row?.original?.leadStatus == ""
                                       ? userCoins < 300
-                                      : userCoins < 150
+                                      : userCoins < 50
                                   }
                                 >
                                   Buy -{" "}
                                   {row?.original?.leadStatus == "new" ||
                                   row?.original?.leadStatus == ""
                                     ? 300
-                                    : 150}
+                                    : 50}
                                 </Button>
                               )}
                             </Text>
