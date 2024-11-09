@@ -979,6 +979,10 @@ export default function CheckTable(props) {
                               {cell?.value?.text || cell?.value}
                             </Text>
                           );
+                        } else if (cell?.column.Header === "Country Source") {
+                          data = (
+                            <Text fontSize={"sm"}>{cell?.value || "-"}</Text>
+                          );
                         } else if (cell?.column.Header === "Whatsapp Number") {
                           data = (
                             <Text
